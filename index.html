@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8">
-<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.24-1 -->
+<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.24-2 -->
 <title>店舗ヘルプ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -91,14 +91,14 @@ Object.defineProperty(google.script, 'run', { get: function(){
   .tile.qr .big { font-size:40px; line-height:1; }
   .tile.qr small { background:transparent; color:#7a5a12; font-weight:600; }
   /* 店舗ごとのURL：その店舗のボタンだけを大きく出す */
-  .menu.single { grid-template-columns:2fr 1fr; align-items:stretch; }
+  .menu.single { grid-template-columns:minmax(0,300px) minmax(0,220px); justify-content:center; align-items:stretch; }
   .menu.single .tile.qr { aspect-ratio:auto; }
   @media (orientation: landscape) and (min-width: 700px) {
     .layout { flex-direction:row; }
     .right { width:44%; max-width:520px; border-top:0; border-left:1px solid var(--menu-line); overflow-y:auto; }
     .menu { grid-template-columns:repeat(2,1fr); gap:12px; padding:12px; }
-    .menu.single { grid-template-columns:1fr; }
-    .menu.single .tile.qr { flex-direction:row; padding:18px; gap:14px; }
+    .menu.single { grid-template-columns:minmax(0,320px); justify-content:center; }
+    .menu.single .tile.qr { padding:16px; gap:6px; }
   }
   .modal { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; }
   .modal.on { display:flex; }
