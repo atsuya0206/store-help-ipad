@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8">
-<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.22-9 -->
+<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.24-1 -->
 <title>店舗ヘルプ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
 (function(){
   var hp = new URLSearchParams(location.hash.replace(/^#/, ''));
   var saved = {}; try { saved = JSON.parse(localStorage.getItem('storeHelpConn') || '{}'); } catch (e) {}
-  var conn = { g: hp.get('g') || '', k: hp.get('k') || hp.get('s') || '', share: !!hp.get('s') };
+  var conn = { g: hp.get('g') || '', k: hp.get('k') || hp.get('s') || '', share: !!hp.get('s'), store: hp.get('store') || '' };
   if (!conn.g || !conn.k) conn = saved;                       // ホーム画面から開いて # が消えた場合の保険
   else if (!conn.share) { try { localStorage.setItem('storeHelpConn', JSON.stringify(conn)); } catch (e) {} }
   window.__CONN = conn;
@@ -90,10 +90,15 @@ Object.defineProperty(google.script, 'run', { get: function(){
   .tile.qr { background:#fff3c4; color:#7a5a12; border:3px solid #e5ddc6; }
   .tile.qr .big { font-size:40px; line-height:1; }
   .tile.qr small { background:transparent; color:#7a5a12; font-weight:600; }
+  /* 店舗ごとのURL：その店舗のボタンだけを大きく出す */
+  .menu.single { grid-template-columns:2fr 1fr; align-items:stretch; }
+  .menu.single .tile.qr { aspect-ratio:auto; }
   @media (orientation: landscape) and (min-width: 700px) {
     .layout { flex-direction:row; }
     .right { width:44%; max-width:520px; border-top:0; border-left:1px solid var(--menu-line); overflow-y:auto; }
     .menu { grid-template-columns:repeat(2,1fr); gap:12px; padding:12px; }
+    .menu.single { grid-template-columns:1fr; }
+    .menu.single .tile.qr { flex-direction:row; padding:18px; gap:14px; }
   }
   .modal { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:16px; }
   .modal.on { display:flex; }
@@ -132,6 +137,13 @@ Object.defineProperty(google.script, 'run', { get: function(){
 <script src="qrcode.js"></script>
 <script type="text/x-main" id="main">
 var D = window.__D;
+// 店舗ごとのURL（store= 付き）なら、その店舗のボタンだけにする
+if (D.fixedStore) {
+  D.stores = D.stores.filter(function(s){ return s.name === D.fixedStore; });
+  document.getElementById('menu').classList.add('single');
+  document.querySelector('.menuHead').textContent = '！ ' + D.fixedStore + ' のヘルプ';
+  document.getElementById('sub').textContent = D.fixedStore + '｜社員の LINE WORKS につながります';
+}
 var KEY = D.share ? 'storeHelpShared' : 'storeHelpActive';
 var active = load();           // [{no, store, at}] 古い順
 // スマホ（QRから開いた）では、共有されたヘルプだけを表示し、店舗ボタンは出さない
@@ -208,7 +220,7 @@ function render(items) {
   var chat = document.getElementById('chat'); chat.textContent = '';
   var live = items.filter(function(it){ return !it.gone; });
   if (!live.length) {
-    chat.appendChild(el('div', 'empty', D.share ? 'このやり取りは終わりました。' : '困ったときは、メニューから\n自分の店舗を押してください。\n社員にヘルプが届きます。'));
+    chat.appendChild(el('div', 'empty', D.share ? 'このやり取りは終わりました。' : D.fixedStore ? '困ったときは、メニューの\n「ヘルプを呼ぶ」を押してください。\n社員にヘルプが届きます。' : '困ったときは、メニューから\n自分の店舗を押してください。\n社員にヘルプが届きます。'));
     chat.lastChild.style.whiteSpace = 'pre-line';
   }
   var sel = document.getElementById('target'); var keep = sel.value; sel.textContent = '';
@@ -282,7 +294,8 @@ document.addEventListener('visibilitychange', function(){ if (!document.hidden) 
   __api('init').then(function(r){
     if (!r || !r.ok) { fail(r && r.expired ? (window.__CONN.share ? 'このQRコードは期限が切れています。\n続けてやり取りするときは、店舗のiPadでもう一度QRコードを出してください。' : 'URLが古いか正しくありません。\n管理者に新しいURLをもらってください。') : '読み込みに失敗しました。'); return; }
     r.stores.forEach(function(s){ s.img = r.share ? '' : (window.__IMG[s.name] || ''); });
-    window.__D = { token: window.__CONN.k, stores: r.stores, share: r.share, nos: r.nos || [] };
+    var fixed = window.__CONN.store && r.stores.some(function(s){ return s.name === window.__CONN.store; }) ? window.__CONN.store : '';
+    window.__D = { token: window.__CONN.k, stores: r.stores, share: r.share, nos: r.nos || [], fixedStore: r.share ? '' : fixed };
     var s = document.createElement('script'); s.textContent = document.getElementById('main').textContent; document.body.appendChild(s);
   }, function(){ fail('通信できませんでした。\nネット接続を確かめて、開き直してください。'); });
 })();
