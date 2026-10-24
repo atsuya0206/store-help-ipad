@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8">
-<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.24-3 -->
+<!-- built from store-bot-gas storeBot_ipad.gs 2026.10.24-4 -->
 <title>店舗ヘルプ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -88,9 +88,15 @@ Object.defineProperty(google.script, 'run', { get: function(){
   .tile.txt { aspect-ratio:480/418; color:#fff; font-size:20px; font-weight:800; display:flex; flex-direction:column;
               align-items:center; justify-content:center; gap:10px; }
   .tile.txt small { background:#fff; color:#333; border-radius:999px; padding:4px 12px; font-size:13px; }
-  .tile.qr { background:#fff3c4; color:#7a5a12; border:3px solid #e5ddc6; }
-  .tile.qr .big { font-size:40px; line-height:1; }
-  .tile.qr small { background:transparent; color:#7a5a12; font-weight:600; }
+  /* スマホで続ける：店舗ボタンと同じ平らな面＋白い札。下に濃い影を付けて押せる見た目にする */
+  .tile.qr { background:#2b3a4e; color:#fff; border-radius:18px; box-shadow:0 5px 0 #18222f; margin-bottom:5px;
+             font-size:19px; letter-spacing:.02em; }
+  .tile.qr svg { width:46px; height:46px; display:block; }
+  .tile.qr small { background:#fff; color:#2b3a4e; font-weight:800; font-size:14px; padding:6px 16px; }
+  .tile.qr:active { transform:translateY(4px); box-shadow:0 1px 0 #18222f; }
+  .tile.qr[disabled] { opacity:1; background:#c3c8cf; box-shadow:0 5px 0 #a7adb6; color:#f4f5f7; }
+  .tile.qr[disabled] small { background:#e4e7eb; color:#8a929c; }
+  .tile.qr[disabled]:active { transform:none; }
   /* 店舗ごとのURL：その店舗のボタンだけを大きく出す */
   .menu.single { grid-template-columns:2fr 1fr; align-items:stretch; }
   .tile.part { display:flex; flex-direction:column; aspect-ratio:480/418; }
@@ -98,6 +104,12 @@ Object.defineProperty(google.script, 'run', { get: function(){
   .tile.part .logo { width:var(--logo-size, 55%); height:auto; }
   .tile.part .lab { width:90%; margin:0 auto 5%; flex:none; }
   .menu.single .tile.qr { aspect-ratio:auto; }
+  /* 縦置き：店舗ごとの画面は、メニューを画面の下半分いっぱいに広げる */
+  @media (orientation: portrait) {
+    .menu.single { height:46vh; grid-template-rows:1fr; }
+    .menu.single .tile { height:100%; aspect-ratio:auto; }
+    .menu.single .tile.part .lab { width:auto; max-width:90%; max-height:40%; }
+  }
   @media (orientation: landscape) and (min-width: 700px) {
     .layout { flex-direction:row; }
     .right { width:44%; max-width:520px; border-top:0; border-left:1px solid var(--menu-line); overflow-y:auto; }
@@ -188,7 +200,11 @@ D.stores.forEach(function(s) {
 });
 // 6つ目のマス：スマホで続ける（やり取り中のヘルプがあるときだけ押せる）
 var qrTile = el('button', 'tile txt qr'); qrTile.id = 'qrTile';
-qrTile.appendChild(el('span', 'big', '📱')); qrTile.appendChild(document.createTextNode('スマホで続ける')); qrTile.appendChild(el('small', null, 'QRコードを表示'));
+qrTile.innerHTML = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" aria-hidden="true">' +
+  '<rect x="13" y="4" width="22" height="40" rx="4"/><line x1="21" y1="38" x2="27" y2="38"/>' +
+  '<rect x="18" y="12" width="5" height="5" fill="currentColor" stroke="none"/><rect x="25" y="12" width="5" height="5" fill="currentColor" stroke="none"/>' +
+  '<rect x="18" y="19" width="5" height="5" fill="currentColor" stroke="none"/><rect x="26" y="21" width="3" height="3" fill="currentColor" stroke="none"/></svg>';
+qrTile.appendChild(document.createTextNode('スマホで続ける')); qrTile.appendChild(el('small', null, 'QRコードを表示'));
 qrTile.disabled = true; menu.appendChild(qrTile);
 document.getElementById('noBtn').onclick = function(){ document.getElementById('modal').classList.remove('on'); pending = null; };
 document.getElementById('yesBtn').onclick = function(){
